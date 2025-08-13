@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Programação de Carros - Ciclo</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f5f5f5; padding: 16px; }
+    .bloco { background: #fff; border: 2px solid #aaa; border-radius: 5px; margin: 16px 0; padding: 14px 18px; max-width: 650px; }
+    h2 { margin: 0 0 8px 0; color: #009688; }
+    table { width: 100%; border-collapse: collapse; margin-bottom: 8px; }
+    th, td { border: 1px solid #bbb; padding: 6px 12px; text-align: center; }
+    th { background: #009688; color: #fff; }
+    tr.total th, tr.total td { background: #e4f7fa; }
+    input[type="number"] { width: 55px; text-align: center; }
+    .linha-total td { font-weight: bold; background: #fffde7;}
+    #totaisglobais {margin: 32px 0; background: #fff; display: inline-block; border:2px solid #aaa; padding: 18px 28px;}
+    .footer { color: #aaa; margin-top: 20px; }
+  </style>
+</head>
+<body>
+  <h1>Programação de Carros - CICLO</h1>
+
+  <div id="main-content"></div>
+
+  <div id="totaisglobais">
+    <b>Total de veículos do dia: <span id="total-dia">0</span></b>
+    <div style="margin-top:7px;">
+      % por transportadora:<br>
+      <span id="percentuais"></span>
+    </div>
+  </div>
+
+<script>
+const blocos=[
+  {
+    nome:'ALC', modais:[
+      "MeliOne Yellow Pool",
+      "MeliOne Van Frota Fixa",
+      "Van Frota Fixa - Equipe dupla",
+      "Van Frota Fixa - Equipe Única",
+      "Yellow Pool Large Van – Equipe dupla",
+      "VUC dedicado com ajudante",
+      "Rental Utilitário com Ajudante",
+      "Melione Rental Utilitário com Ajudante",
+      "Utilitários SPOT",
+    ]
+  },
+  {
+    nome:'MURICI', modais:[
+      "Van Frota Fixa - Equipe Única",
+      "VUC dedicado com ajudante",
+      "Van Frota Fixa Dedicado",
+      "MeliOne Van Frota Fixa",
+      "Melione Van Média Elétrica",
+      "Van Média elétrica",
+      "Rental Utilitário com Ajudante",
+    ]
+  },
+  {
+    nome:'TORRES', modais:[
+      "MeliOne Yellow Pool",
+      "Melione Large Van Eletrica J750",
+      "MeliOne Van Frota Fixa",
+      "Yellow Pool Large Van – Equipe dupla",
+      "VUC dedicado com ajudante",
+      "Rental Utilitário com Ajudante",
+      "Van Elétrica JV",
+      "Large Van Eletrica J750"
+    ]
+  },
+  {
+    nome:'KANGU', modais:[
+      "Utilitários SPOT",
+      "Utilitários SDD"
+    ]
+  },
+  {
+    nome:'BLD', modais:[
+      "Utilitários SPOT",
+      "Van TKS 2025"
+    ]
+  },
+  {
+    nome:'ÚNICA', modais:[
+      "Utilitários SPOT",
+      "SPOT -Bulk - VUC equipe única Pool"
+    ]
+  }
+];
+
+function gerarTabelaModal(bloco) {
+  let t = `<div class="bloco"><h2>${bloco.nome}</h2>`;
+  t += '<table>';
+  t += `
+    <tr>
+      <th>Modal</th>
+      <th>CICLO AM</th>
+      <th>CICLO PM</th>
+      <th>No Show</th>
+      <th>Total</th>
+    </tr>
+  `;
+  bloco.modais.forEach((modal,idx) => {
+    const id = bloco.nome+'_'+idx;
+    t += `
+      <tr>
+        <td>${modal}</td>
+        <td><input type="number" min="0" value="0" id="am_${id}" onchange="calcTotais()"></td>
+        <td><input type="number" min="0" value="0" id="pm_${id}" onchange="calcTotais()"></td>
+        <td><input type="number" min="0" value="0" id="no_${id}" onchange="calcTotais()"></td>
+        <td id="total_${id}">0</td>
+      </tr>
+    `;
+  });
+  t += `
+    <tr class="linha-total">
+      <td>TOTAL</td>
+      <td id="blocototal_am_${bloco.nome}">0</td>
+      <td id="blocototal_pm_${bloco.nome}">0</td>
+      <td id="blocototal_no_${bloco.nome}">0</td>
+      <td id="blocototal_geral_${bloco.nome}">0</td>
+    </tr>
+  `;
+  t += '</table></div>';
+  return t;
+}
+
+// Gera os blocos
+document.getElementById('main-content').innerHTML = blocos.map(gerarTabelaModal).join('');
+
+function calcTotais() {
+  let globaisPorTransp = {};
+  let totalDia = 0;
+  let tabelaPercent=[];
+// Para cada bloco (transportadora)
+  blocos.forEach( bloco => {
+    let bloco_am = 0, bloco_pm = 0, bloco_no = 0, bloco_geral = 0;
+    bloco.modais.forEach((modal, idx) => {
+      const id = bloco.nome+'_'+idx;
+      const am = +document.getElementById('am_'+id).value || 0;
+      const pm = +document.getElementById('pm_'+id).value || 0;
+      const no = +document.getElementById('no_'+id).value || 0;
+      const total = am + pm;
+      bloco_am += am;
+      bloco_pm += pm;
+      bloco_no += no;
+      bloco_geral += total;
+      document.getElementById('total_'+id).innerText = total;
+    });
+    document.getElementById('blocototal_am_'+bloco.nome).innerText = bloco_am;
+    document.getElementById('blocototal_pm_'+bloco.nome).innerText = bloco_pm;
+    document.getElementById('blocototal_no_'+bloco.nome).innerText = bloco_no;
+    document.getElementById('blocototal_geral_'+bloco.nome).innerText = bloco_geral;
+    globaisPorTransp[bloco.nome]=bloco_geral;
+    totalDia += bloco_geral;
+  });
+  document.getElementById('total-dia').innerText = totalDia;
+  // Percentuais por transportadora
+  for(let transp in globaisPorTransp)
+    tabelaPercent.push(
+      `${transp}: <b>${totalDia ? (100*globaisPorTransp[transp]/totalDia).toFixed(1) : '0'} %</b>`
+    );
+  document.getElementById('percentuais').innerHTML = tabelaPercent.join(" &nbsp;|&nbsp; ");
+}
+window.onload = calcTotais;
+</script>
+
+<div class="footer">Pronto para ser preenchido. Você pode salvar/compartilhar este HTML para uso diário.<br>
+Adaptações ou integração com planilha/importador sob consulta!</div>
+</body>
+</html>
