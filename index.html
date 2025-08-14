@@ -2,8 +2,7 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>Programação de Carros Importável</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <title>Programação de Carros - CICLO</title>
   <style>
     body { font-family: Arial, sans-serif; background: #f5f5f5; padding: 16px; }
     .bloco { background: #fff; border: 2px solid #aaa; border-radius: 5px; margin: 16px 0; padding: 14px 18px; max-width: 670px;}
@@ -20,16 +19,10 @@
       .bloco {max-width:100%;}
       #totaisglobais {width:100%;}
     }
-    .importbox {padding:10px;background:#fffbe5;border:1px solid #f7ba03;margin-bottom:18px;display:inline-block;}
   </style>
 </head>
 <body>
   <h1>Programação de Carros - CICLO</h1>
-  <div class="importbox">
-    <input type="file" id="arquivoExcel" accept=".xlsx">
-    <button onclick="importarExcel()">Importar Excel e Atualizar Dados</button>
-    <span id="importmsg" style="color:green;font-weight:bold;margin-left:16px;"></span>
-  </div>
   <div class="painel-flex" id="painel"></div>
   <div id="painel-extra"></div>
 
@@ -105,12 +98,14 @@ const blocos = [
   }
 ];
 
+// MELI EXTRA modais fixos:
 const meliExtraModais = [
   { id: "4hrs", label: "4HRS" },
   { id: "vucextra", label: "VUC Extra" },
   { id: "moto", label: "MOTO" }
 ];
 
+// NEX cidades/siglas:
 const nexSiglas = [
   { cidade: "ASSIS", sigla: "BRNSP871" },
   { cidade: "TUPÃ", sigla: "BRNSP424" },
@@ -264,134 +259,10 @@ function calcTotais() {
   document.getElementById('nex_total').innerText = nex_total;
 }
 window.onload = calcTotais;
-
-// IMPORTAÇÃO DO EXCEL!
-function importarExcel() {
-  var arquivo = document.getElementById('arquivoExcel').files[0];
-  if (!arquivo) {
-    alert("Selecione um arquivo Excel (.xlsx)");
-    return;
-  }
-  var reader = new FileReader();
-  reader.onload = function(e) {
-    var data = new Uint8Array(e.target.result);
-    var workbook = XLSX.read(data, {type: 'array'});
-    var sheet = workbook.Sheets[workbook.SheetNames[0]];
-    var arr = XLSX.utils.sheet_to_json(sheet, {header:1});
-    preencherPaginaComExcel(arr);
-  };
-  reader.readAsArrayBuffer(arquivo);
-}
-
-function normalize(str) {
-  return (str||"").toLowerCase().replace(/[\s\u2013-]+/g," ").replace(/\s+/g," ").replace(/[^\w ]/g,'').trim();
-}
-
-function preencherPaginaComExcel(arr) {
-  let preencheu = false;
-  // BLOCO ALC
-  let alcStart = arr.findIndex(linha=>normalize(linha[0])=="melione yellow pool");
-  if (alcStart >= 0) {
-    for (let i=0; i<blocos[0].modais.length; i++) {
-      let linha = arr[alcStart+i];
-      if(!linha) continue;
-      document.getElementById('am_ALC_'+i).value = Number(linha[1]) || 0;
-      document.getElementById('pm_ALC_'+i).value = Number(linha[2]) || 0;
-      document.getElementById('no_ALC_'+i).value = Number(linha[3]) || 0;
-      preencheu = true;
-    }
-  }
-  // BLOCO MURICI
-  let muriciStart = arr.findIndex(linha=>normalize(linha[0])=="van frota fixa equipe unica");
-  if (muriciStart >= 0) {
-    for (let i=0; i<blocos[1].modais.length; i++) {
-      let linha = arr[muriciStart+i];
-      if(!linha) continue;
-      document.getElementById('am_MURICI_'+i).value = Number(linha[1]) || 0;
-      document.getElementById('pm_MURICI_'+i).value = Number(linha[2]) || 0;
-      document.getElementById('no_MURICI_'+i).value = Number(linha[3]) || 0;
-      preencheu = true;
-    }
-  }
-  // BLOCO TORRES
-  let torresStart = arr.findIndex(linha=>normalize(linha[0])=="melione yellow pool" && normalize((arr[arr.indexOf(linha)-1]||[])[0])=="torres ciclo am");
-  if(torresStart>=0){
-    for (let i=0; i<blocos[2].modais.length; i++) {
-      let linha = arr[torresStart+i];
-      if(!linha) continue;
-      document.getElementById('am_TORRES_'+i).value = Number(linha[1]) || 0;
-      document.getElementById('pm_TORRES_'+i).value = Number(linha[2]) || 0;
-      document.getElementById('no_TORRES_'+i).value = Number(linha[3]) || 0;
-      preencheu = true;
-    }
-  }
-  // KANGU
-  let kanguStart = arr.findIndex(linha=>normalize(linha[0])=="utilitarios spot");
-  if(kanguStart>=0){
-    for(let i=0; i<blocos[3].modais.length; i++){
-      let linha = arr[kanguStart+i];
-      if(!linha) continue;
-      document.getElementById('am_KANGU_'+i).value = Number(linha[1]) || 0;
-      document.getElementById('pm_KANGU_'+i).value = Number(linha[2]) || 0;
-      document.getElementById('no_KANGU_'+i).value = Number(linha[3]) || 0;
-      preencheu = true;
-    }
-  }
-  // BLD
-  let bldStart = arr.findIndex(linha=>normalize(linha[0])=="utilitarios spot" && normalize((arr[arr.indexOf(linha)-1]||[])[0])=="bld brasil ciclo am");
-  if(bldStart>=0){
-    for(let i=0; i<blocos[4].modais.length; i++){
-      let linha = arr[bldStart+i];
-      if(!linha) continue;
-      document.getElementById('am_BLD_'+i).value = Number(linha[1]) || 0;
-      document.getElementById('pm_BLD_'+i).value = Number(linha[2]) || 0;
-      document.getElementById('no_BLD_'+i).value = Number(linha[3]) || 0;
-      preencheu = true;
-    }
-  }
-  // UNICA
-  let unicaStart = arr.findIndex(linha=>normalize(linha[0])=="utilitarios spot" && normalize((arr[arr.indexOf(linha)-1]||[])[0])=="unica ciclo am");
-  if(unicaStart>=0){
-    for(let i=0; i<blocos[5].modais.length; i++){
-      let linha = arr[unicaStart+i];
-      if(!linha) continue;
-      document.getElementById('am_ÚNICA_'+i).value = Number(linha[1]) || 0;
-      document.getElementById('pm_ÚNICA_'+i).value = Number(linha[2]) || 0;
-      document.getElementById('no_ÚNICA_'+i).value = Number(linha[3]) || 0;
-      preencheu = true;
-    }
-  }
-  // MELI EXTRA
-  let meliExtraLin = arr.findIndex(linha=>normalize(linha[0])=="4hrs" && normalize((arr[arr.indexOf(linha)-1]||[])[0])=="meli extra");
-  if (meliExtraLin < 0) meliExtraLin = arr.findIndex(linha=>normalize(linha[0])=="4hrs");
-  if (meliExtraLin >= 0) {
-    for(let i=0;i<meliExtraModais.length;i++){
-      let linha = arr[meliExtraLin + i];
-      if(!linha) continue;
-      document.getElementById('meliExtra_'+meliExtraModais[i].id+'_am').value = Number(linha[1]) || 0;
-      document.getElementById('meliExtra_'+meliExtraModais[i].id+'_pm').value = Number(linha[2]) || 0;
-    }
-    preencheu = true;
-  }
-  // NEX
-  let nexLine = arr.findIndex(linha=>linha[0]&&normalize(linha[0])=="assis");
-  if(nexLine>=0){
-    for(let i=0;i<nexSiglas.length;i++){
-      let linha = arr[nexLine+i];
-      if(!linha) continue;
-      document.getElementById('nex_'+nexSiglas[i].sigla.toLowerCase()).value = Number(linha[2]) || 0;
-    }
-    preencheu = true;
-  }
-
-  calcTotais();
-  document.getElementById('importmsg').innerText = preencheu ? "Importação realizada!" : "Não foi possível localizar os dados na planilha!";
-  setTimeout(()=>{document.getElementById('importmsg').innerText="";}, 5000);
-}
 </script>
+
 <div class="footer">
-  Pronto para uso! 
-  <b>Ao importar um Excel no botão acima, os campos serão preenchidos automaticamente.</b>
+  Uso manual. Preencha os campos e veja os totais e percentuais ao vivo.<br>
 </div>
 </body>
 </html>
