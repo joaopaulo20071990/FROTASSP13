@@ -10,7 +10,9 @@
     table { width: 100%; border-collapse: collapse; margin-bottom: 8px; }
     th, td { border: 1px solid #bbb; padding: 6px 8px; text-align: center; }
     th { background: #009688; color: #fff; }
-    .linha-total td { font-weight:bold; background: #fffde7;}
+    tr.linha-total th, tr.linha-total td { background: #e4f7fa; }
+    input[type="number"] { width: 60px; text-align: center; }
+    .linha-total td, .linha-total th { font-weight:bold; background: #fffde7;}
     #totaisglobais {margin: 32px 0; background: #fff; display: inline-block; border:2px solid #aaa; padding: 18px 28px;}
     .footer { color: #aaa; margin-top: 20px; }
     .painel-flex { display: flex; flex-wrap: wrap; gap: 24px; }
@@ -116,6 +118,7 @@ const nexSiglas = [
   { cidade: "PALMITAL", sigla: "BRNSP344" }
 ];
 
+// Painéis das transportadoras
 function gerarTabelaModal(bloco) {
   let t = `<div class="bloco"><h2>${bloco.nome}</h2><table>
     <tr>
@@ -146,6 +149,7 @@ function gerarTabelaModal(bloco) {
   return t;
 }
 
+// Painel MELI EXTRA (com coluna TOTAL)
 function blocoMeliExtra() {
   let t = `<div class="bloco"><h2>Meli Extra</h2><table>
     <tr>
@@ -173,6 +177,7 @@ function blocoMeliExtra() {
   return t;
 }
 
+// Painel NEX
 function blocoNEX() {
   let t = `<div class="bloco"><h2>NEX</h2><table>
     <tr>
@@ -197,7 +202,9 @@ function blocoNEX() {
   return t;
 }
 
+// Renderiza painéis principais
 document.getElementById('painel').innerHTML = blocos.map(gerarTabelaModal).join('');
+// Renderiza painéis extras
 document.getElementById('painel-extra').innerHTML = blocoMeliExtra() + blocoNEX();
 
 function calcTotais() {
@@ -205,6 +212,7 @@ function calcTotais() {
   let totalDia = 0;
   let tabelaPercent=[];
 
+  // Transportadoras
   blocos.forEach( bloco => {
     let bloco_am = 0, bloco_pm = 0, bloco_no = 0, bloco_geral = 0;
     bloco.modais.forEach((modal, idx) => {
@@ -229,12 +237,14 @@ function calcTotais() {
 
   document.getElementById('total-dia').innerText = totalDia;
 
+  // Percentuais por transportadora
   for(let transp in globaisPorTransp)
     tabelaPercent.push(
       `${transp}: <b>${totalDia ? (100*globaisPorTransp[transp]/totalDia).toFixed(1) : '0'} %</b>`
     );
   document.getElementById('percentuais').innerHTML = tabelaPercent.join(" &nbsp;|&nbsp; ");
 
+  // Meli Extra Totais e soma por linha
   let meliExtra_am = 0, meliExtra_pm = 0, meliExtra_geral = 0;
   meliExtraModais.forEach(item => {
     let am = +document.getElementById('meliExtra_'+item.id+'_am').value || 0;
@@ -250,6 +260,7 @@ function calcTotais() {
   document.getElementById('meliExtra_total_geral').innerText = meliExtra_geral;
   document.getElementById('meli_extra_total').innerText = meliExtra_geral;
 
+  // NEX Totais
   let nex_total=0;
   nexSiglas.forEach(item=>{
     let id = item.sigla.toLowerCase();
@@ -262,7 +273,7 @@ window.onload = calcTotais;
 </script>
 
 <div class="footer">
-  Uso manual. Preencha os campos e veja os totais e percentuais ao vivo.<br>
+  Pronto para uso! Preencha os campos e veja os totais ao vivo.<br>
 </div>
 </body>
 </html>
