@@ -2,49 +2,278 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>Programação de Carros - CICLO + Firebase</title>
+  <title>Programação de Carros - CICLO</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f5f5f5; padding: 16px; }
+    .bloco { background: #fff; border: 2px solid #aaa; border-radius: 5px; margin: 16px 0; padding: 14px 18px; max-width: 670px;}
+    h2 { margin: 0 0 8px 0; color: #009688; }
+    table { width: 100%; border-collapse: collapse; margin-bottom: 8px; }
+    th, td { border: 1px solid #bbb; padding: 6px 8px; text-align: center; }
+    th { background: #009688; color: #fff; }
+    tr.linha-total th, tr.linha-total td { background: #e4f7fa; }
+    input[type="number"] { width: 60px; text-align: center; }
+    .linha-total td, .linha-total th { font-weight:bold; background: #fffde7;}
+    #totaisglobais {margin: 32px 0; background: #fff; display: inline-block; border:2px solid #aaa; padding: 18px 28px;}
+    .footer { color: #aaa; margin-top: 20px; }
+    .painel-flex { display: flex; flex-wrap: wrap; gap: 24px; }
+    @media (max-width:900px) {
+      .painel-flex { flex-direction: column;}
+      .bloco {max-width:100%;}
+      #totaisglobais {width:100%;}
+    }
+  </style>
 </head>
 <body>
-  <h1>Exemplo Firebase Hosting + Configuração</h1>
-  
-  <p>Firebase conectado! Veja no console do navegador.</p>
-  
-  <!-- Firebase App SDK via CDN -->
-  <script type="module">
-    // Importa funções do Firebase via módulos CDN (ES Modules)
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
-    // Se quiser usar Firestore ou Auth, importe aqui também.
+  <h1>Programação de Carros - CICLO</h1>
+  <div class="painel-flex" id="painel"></div>
+  <div id="painel-extra"></div>
 
-    // SUA configuração
-    const firebaseConfig = {
-      apiKey: "AIzaSyBRzkdcExX-O0J3N7GmlLyIwakXBmF-Xf4",
-      authDomain: "frotassp13.firebaseapp.com",
-      projectId: "frotassp13",
-      storageBucket: "frotassp13.appspot.com",
-      messagingSenderId: "1033504115866",
-      appId: "1:1033504115866:web:b74563531022369fe2e323"
-    };
+  <div id="totaisglobais">
+    <b>Total de veículos do dia: <span id="total-dia">0</span></b>
+    <div style="margin-top:7px;">
+      % por transportadora:<br>
+      <span id="percentuais"></span>
+    </div>
+    <div style="margin-top:7px;">
+      Total NEX do dia: <span id="nex_total">0</span>
+    </div>
+    <div style="margin-top:7px;">
+      Total MELI EXTRA do dia: <span id="meli_extra_total">0</span>
+    </div>
+  </div>
 
-    // Inicializa Firebase
-    const app = initializeApp(firebaseConfig);
-    // Teste no console:
-    console.log("Firebase conectado:", app);
+<script>
+const blocos = [
+  {
+    nome: 'ALC', modais: [
+      "MeliOne Yellow Pool",
+      "MeliOne Van Frota Fixa",
+      "Van Frota Fixa - Equipe dupla",
+      "Van Frota Fixa - Equipe Única",
+      "Yellow Pool Large Van – Equipe dupla",
+      "VUC dedicado com ajudante",
+      "Rental Utilitário com Ajudante",
+      "Melione Rental Utilitário com Ajudante",
+      "Utilitários SPOT",
+    ]
+  },
+  {
+    nome: 'MURICI', modais: [
+      "Van Frota Fixa - Equipe Única",
+      "VUC dedicado com ajudante",
+      "Van Frota Fixa Dedicado",
+      "MeliOne Van Frota Fixa",
+      "Melione Van Média Elétrica",
+      "Van Média elétrica",
+      "Rental Utilitário com Ajudante",
+    ]
+  },
+  {
+    nome: 'TORRES', modais: [
+      "MeliOne Yellow Pool",
+      "Melione Large Van Eletrica J750",
+      "MeliOne Van Frota Fixa",
+      "Yellow Pool Large Van – Equipe dupla",
+      "VUC dedicado com ajudante",
+      "Rental Utilitário com Ajudante",
+      "Van Elétrica JV",
+      "Large Van Eletrica J750"
+    ]
+  },
+  {
+    nome: 'KANGU', modais: [
+      "Utilitários SPOT",
+      "Utilitários SDD"
+    ]
+  },
+  {
+    nome: 'BLD', modais: [
+      "Utilitários SPOT",
+      "Van TKS 2025"
+    ]
+  },
+  {
+    nome: 'ÚNICA', modais: [
+      "Utilitários SPOT",
+      "SPOT -Bulk - VUC equipe única Pool"
+    ]
+  }
+];
 
-    // Exemplo: usando Firestore
-    /*
-    import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
-    const db = getFirestore(app);
-    async function gravarExemplo() {
-      await addDoc(collection(db, "testes"), { mensagem: "Olá, Firebase!" });
-      alert("Gravado no Firestore!");
-    }
-    window.gravarExemplo = gravarExemplo;
-    */
-  </script>
+// MELI EXTRA modais fixos:
+const meliExtraModais = [
+  { id: "4hrs", label: "4HRS" },
+  { id: "vucextra", label: "VUC Extra" },
+  { id: "moto", label: "MOTO" }
+];
 
-  <!-- Botão teste para futuras gravações (se quiser usar o exemplo acima, retire comentário do JS) -->
-  <!--
-  <button onclick="gravarExemplo()">Gravar exemplo no Firestore</button>
-  -->
+// NEX cidades/siglas:
+const nexSiglas = [
+  { cidade: "ASSIS", sigla: "BRNSP871" },
+  { cidade: "TUPÃ", sigla: "BRNSP424" },
+  { cidade: "LINS", sigla: "BRNSP113" },
+  { cidade: "GARÇA", sigla: "BRNSP142" },
+  { cidade: "LINS", sigla: "BRNSP589" },
+  { cidade: "LINS", sigla: "BRNSP762" },
+  { cidade: "PALMITAL", sigla: "BRNSP344" }
+];
+
+// Painéis das transportadoras
+function gerarTabelaModal(bloco) {
+  let t = `<div class="bloco"><h2>${bloco.nome}</h2><table>
+    <tr>
+      <th>Modal</th>
+      <th>CICLO AM</th>
+      <th>CICLO PM</th>
+      <th>No Show</th>
+      <th>Total</th>
+    </tr>`;
+  bloco.modais.forEach((modal,idx) => {
+    const id = bloco.nome+'_'+idx;
+    t += `<tr>
+        <td>${modal}</td>
+        <td><input type="number" min="0" value="0" id="am_${id}" onchange="calcTotais()"></td>
+        <td><input type="number" min="0" value="0" id="pm_${id}" onchange="calcTotais()"></td>
+        <td><input type="number" min="0" value="0" id="no_${id}" onchange="calcTotais()"></td>
+        <td id="total_${id}">0</td>
+      </tr>`;
+  });
+  t += `
+    <tr class="linha-total">
+      <td>TOTAL</td>
+      <td id="blocototal_am_${bloco.nome}">0</td>
+      <td id="blocototal_pm_${bloco.nome}">0</td>
+      <td id="blocototal_no_${bloco.nome}">0</td>
+      <td id="blocototal_geral_${bloco.nome}">0</td>
+    </tr></table></div>`;
+  return t;
+}
+
+// Painel MELI EXTRA (com coluna TOTAL)
+function blocoMeliExtra() {
+  let t = `<div class="bloco"><h2>Meli Extra</h2><table>
+    <tr>
+      <th>Modal</th>
+      <th>CICLO AM</th>
+      <th>CICLO PM</th>
+      <th>TOTAL</th>
+    </tr>`;
+  meliExtraModais.forEach(item => {
+    t += `<tr>
+      <td>${item.label}</td>
+      <td><input type="number" min="0" value="0" id="meliExtra_${item.id}_am" onchange="calcTotais()"></td>
+      <td><input type="number" min="0" value="0" id="meliExtra_${item.id}_pm" onchange="calcTotais()"></td>
+      <td id="meliExtra_${item.id}_total">0</td>
+    </tr>`;
+  });
+  t += `
+    <tr class="linha-total">
+      <td>TOTAL</td>
+      <td id="meliExtra_total_am">0</td>
+      <td id="meliExtra_total_pm">0</td>
+      <td id="meliExtra_total_geral">0</td>
+    </tr>
+  </table></div>`;
+  return t;
+}
+
+// Painel NEX
+function blocoNEX() {
+  let t = `<div class="bloco"><h2>NEX</h2><table>
+    <tr>
+      <th>Cidade</th>
+      <th>Sigla</th>
+      <th>Total</th>
+    </tr>`;
+  nexSiglas.forEach((item) => {
+    let id = item.sigla.toLowerCase();
+    t += `<tr>
+      <td>${item.cidade}</td>
+      <td>${item.sigla}</td>
+      <td><input type="number" min="0" value="0" id="nex_${id}" onchange="calcTotais()"></td>
+    </tr>`;
+  });
+  t += `
+    <tr class="linha-total">
+      <td colspan="2"><b>TOTAL</b></td>
+      <td id="nex_total_bloco">0</td>
+    </tr>
+  </table></div>`;
+  return t;
+}
+
+// Renderiza painéis principais
+document.getElementById('painel').innerHTML = blocos.map(gerarTabelaModal).join('');
+// Renderiza painéis extras
+document.getElementById('painel-extra').innerHTML = blocoMeliExtra() + blocoNEX();
+
+function calcTotais() {
+  let globaisPorTransp = {};
+  let totalDia = 0;
+  let tabelaPercent=[];
+
+  // Transportadoras
+  blocos.forEach( bloco => {
+    let bloco_am = 0, bloco_pm = 0, bloco_no = 0, bloco_geral = 0;
+    bloco.modais.forEach((modal, idx) => {
+      const id = bloco.nome+'_'+idx;
+      const am = +document.getElementById('am_'+id).value || 0;
+      const pm = +document.getElementById('pm_'+id).value || 0;
+      const no = +document.getElementById('no_'+id).value || 0;
+      const total = am + pm;
+      bloco_am += am;
+      bloco_pm += pm;
+      bloco_no += no;
+      bloco_geral += total;
+      document.getElementById('total_'+id).innerText = total;
+    });
+    document.getElementById('blocototal_am_'+bloco.nome).innerText = bloco_am;
+    document.getElementById('blocototal_pm_'+bloco.nome).innerText = bloco_pm;
+    document.getElementById('blocototal_no_'+bloco.nome).innerText = bloco_no;
+    document.getElementById('blocototal_geral_'+bloco.nome).innerText = bloco_geral;
+    globaisPorTransp[bloco.nome]=bloco_geral;
+    totalDia += bloco_geral;
+  });
+
+  document.getElementById('total-dia').innerText = totalDia;
+
+  // Percentuais por transportadora
+  for(let transp in globaisPorTransp)
+    tabelaPercent.push(
+      `${transp}: <b>${totalDia ? (100*globaisPorTransp[transp]/totalDia).toFixed(1) : '0'} %</b>`
+    );
+  document.getElementById('percentuais').innerHTML = tabelaPercent.join(" &nbsp;|&nbsp; ");
+
+  // Meli Extra Totais e soma por linha
+  let meliExtra_am = 0, meliExtra_pm = 0, meliExtra_geral = 0;
+  meliExtraModais.forEach(item => {
+    let am = +document.getElementById('meliExtra_'+item.id+'_am').value || 0;
+    let pm = +document.getElementById('meliExtra_'+item.id+'_pm').value || 0;
+    let total = am + pm;
+    meliExtra_am += am;
+    meliExtra_pm += pm;
+    meliExtra_geral += total;
+    document.getElementById('meliExtra_'+item.id+'_total').innerText = total;
+  });
+  document.getElementById('meliExtra_total_am').innerText = meliExtra_am;
+  document.getElementById('meliExtra_total_pm').innerText = meliExtra_pm;
+  document.getElementById('meliExtra_total_geral').innerText = meliExtra_geral;
+  document.getElementById('meli_extra_total').innerText = meliExtra_geral;
+
+  // NEX Totais
+  let nex_total=0;
+  nexSiglas.forEach(item=>{
+    let id = item.sigla.toLowerCase();
+    nex_total += +document.getElementById('nex_'+id).value || 0;
+  });
+  document.getElementById('nex_total_bloco').innerText = nex_total;
+  document.getElementById('nex_total').innerText = nex_total;
+}
+window.onload = calcTotais;
+</script>
+
+<div class="footer">
+  Pronto para uso! Preencha os campos e veja os totais ao vivo.<br>
+</div>
 </body>
 </html>
